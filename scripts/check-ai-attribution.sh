@@ -28,8 +28,8 @@ fi
 fail=0
 count=0
 
-# Mẫu cấm trong commit message
-msg_pattern='^[[:space:]]*(co-authored-by|co-developed-by)[[:space:]]*:.*(claude|anthropic)|(generated|created|made|written)[[:space:]]+(with|by)[[:space:]]+.*(claude|anthropic)|noreply@anthropic\.com'
+# Mẫu cấm trong commit message: thấy tên AI là chặn, không xét ngữ cảnh
+msg_pattern='claude|anthropic'
 # Mẫu cấm trong danh tính commit
 id_pattern='claude|anthropic'
 

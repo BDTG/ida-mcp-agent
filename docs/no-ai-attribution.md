@@ -32,7 +32,7 @@ Kiểm chứng: `GET /repos/anthropics/claude-code/contributors` trả về mộ
    bash scripts/setup-hooks.sh
    ```
 
-   Hook từ chối: trailer co-author trỏ tới Claude/Anthropic, dòng `Generated with Claude Code`, email `*@anthropic.com`, và trường hợp commit author là AI.
+   Hook từ chối mọi commit mà message hoặc danh tính commit chứa `claude` hay `anthropic`, không xét ngữ cảnh.
 
 3. GitHub Actions + bảo vệ nhánh:
 
