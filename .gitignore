@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# IDA Pro
+*.i64
+*.idb
+*.til
+*.nam
+*.unp
+
+# Mẫu và kết quả phân tích (chỉ commit mẫu tự sinh)
+samples/*.exe
+samples/*.dll
+samples/*.elf
+samples/*.bin
+analysis_out/
+reports/out/
+
+# Cấu hình cá nhân
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+*.local.json
+
+# Hệ điều hành
+Thumbs.db
+desktop.ini
+.DS_Store

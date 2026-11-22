@@ -1,0 +1,61 @@
+name: contributors-guard
+
+# Kiem tra dinh ky bang contributors cua repo, bao do neu co tai khoan AI/bot.
+# Claude xuat hien trong bang contributors chu yeu qua GitHub App (danh tinh claude[bot]),
+# khong phai qua trailer Co-Authored-By, nen phai kiem tra rieng o day.
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/contributors-guard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contributors-guard:
+    name: contributors-guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Doc danh sach contributors qua REST API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${REPO}/contributors?per_page=100&anon=1"
+          curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
+               -H "Accept: application/vnd.github+json" "$api" > contributors.json
+
+          python3 - <<'PY'
+          import json, re, sys
+
+          with open("contributors.json", encoding="utf-8") as fh:
+              data = json.load(fh)
+
+          if isinstance(data, dict):
+              print("Khong doc duoc contributors:", data)
+              sys.exit(1)
+
+          bad_pattern = re.compile(r"claude|anthropic", re.I)
+          bad = []
+          for item in data:
+              login = item.get("login") or ""
+              kind = item.get("type") or "Anonymous"
+              if bad_pattern.search(login) or kind == "Bot":
+                  bad.append((login or item.get("email"), kind, item.get("contributions")))
+
+          print(f"Tong so muc contributors: {len(data)}")
+          for login, kind, contributions in bad:
+              print(f"  VI PHAM: {login} ({kind}), {contributions} commit")
+
+          if bad:
+              print("::error title=Contributors co tai khoan AI/bot::Xem log, can go GitHub App va viet lai lich su.")
+              sys.exit(1)
+
+          print("OK: bang contributors chi gom tai khoan nguoi.")
+          PY

@@ -1,0 +1,43 @@
+#!/bin/sh
+# .githooks/commit-msg
+# Chặn mọi dấu vết tác giả AI (Claude/Anthropic) trong commit.
+# Bật bằng: bash scripts/setup-hooks.sh  (git config core.hooksPath .githooks)
+
+msg_file="$1"
+
+if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
+  echo "commit-msg: khong tim thay file message" >&2
+  exit 1
+fi
+
+block() {
+  printf '\n[BLOCKED] %s\n' "$1" >&2
+  printf 'Repo nay khong cho Claude/Anthropic xuat hien trong lich su git va bang contributors.\n' >&2
+  printf 'Xem CONTRIBUTING.md muc "Khong dan ten AI vao commit".\n' >&2
+  printf 'Bo trailer roi commit lai, vi du: git commit --amend -m "<message sach>"\n\n' >&2
+  exit 1
+}
+
+# 1. Trailer co-author tro toi AI
+if grep -Eiq '^[[:space:]]*(co-authored-by|co-developed-by|signed-off-by)[[:space:]]*:.*(claude|anthropic)' "$msg_file"; then
+  block "Commit message co trailer tac gia AI (Co-Authored-By/Signed-off-by tro toi Claude hoac Anthropic)."
+fi
+
+# 2. Dong quang cao cua cong cu AI
+if grep -Eiq '(generated|created|made|written)[[:space:]]+(with|by)[[:space:]]+.*(claude|anthropic)' "$msg_file"; then
+  block "Commit message chua dong quang cao kieu 'Generated with Claude Code'."
+fi
+
+if grep -Eiq 'claude-code@|noreply@anthropic\.com' "$msg_file"; then
+  block "Commit message chua email cua cong cu AI (anthropic.com)."
+fi
+
+# 3. Danh tinh commit (author/committer) la AI
+ident_name="${GIT_AUTHOR_NAME:-$(git config user.name)}"
+ident_mail="${GIT_AUTHOR_EMAIL:-$(git config user.email)}"
+ident="$ident_name <$ident_mail>"
+if printf '%s' "$ident" | grep -Eiq 'claude|anthropic'; then
+  block "Commit author la '$ident'. Dat lai danh tinh nguoi that: git config user.name / user.email."
+fi
+
+exit 0

@@ -1,0 +1,45 @@
+name: no-ai-coauthor
+
+# Chan tác giả AI (Claude/Anthropic) trong lịch sử git.
+# Check này là context bắt buộc của bảo vệ nhánh main, nên PR có dấu vết AI không merge được.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: no-ai-coauthor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-ai-coauthor:
+    name: no-ai-coauthor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Quet commit message va danh tinh commit
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/check-ai-attribution.sh
+
+          if [ -n "${BASE_SHA:-}" ] && git rev-parse --verify -q "$BASE_SHA" >/dev/null; then
+            echo "Pham vi: $BASE_SHA..HEAD (pull request)"
+            bash scripts/check-ai-attribution.sh "$BASE_SHA..HEAD"
+          elif [ -n "${BEFORE_SHA:-}" ] && git rev-parse --verify -q "$BEFORE_SHA" >/dev/null; then
+            echo "Pham vi: $BEFORE_SHA..$GITHUB_SHA (push)"
+            bash scripts/check-ai-attribution.sh "$BEFORE_SHA..$GITHUB_SHA"
+          else
+            echo "Pham vi: toan bo lich su cua HEAD"
+            bash scripts/check-ai-attribution.sh
+          fi
