@@ -50,14 +50,6 @@ cd ida-mcp-agent
 bash scripts/setup-hooks.sh      # bắt buộc một lần cho mỗi máy clone
 ```
 
-## Quy tắc đóng góp
-
-Đọc `CONTRIBUTING.md`. Tóm tắt:
-
-1. Không push thẳng vào `main`, mở nhánh riêng rồi tạo pull request.
-2. Không thêm dấu vết tác giả AI vào commit (không `Co-Authored-By: Claude ...`, không dòng `Generated with Claude Code`). Xem mục "Không dẫn tên AI vào commit".
-3. Không commit mẫu mã độc thật, file `.i64`/`.idb`, hay binary của IDA.
-
 ## Cấu trúc repo (dự kiến)
 
 ```
