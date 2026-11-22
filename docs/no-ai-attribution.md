@@ -13,7 +13,7 @@ Có hai đường khác nhau, phải chặn cả hai:
 
 Kiểm chứng: `GET /repos/anthropics/claude-code/contributors` trả về một mục `claude[bot]` với `type: "Bot"`. Nghĩa là chỉ xóa trailer là chưa đủ, phải không cài app Claude trên repo.
 
-## Bốn lớp chặn
+## Ba lớp chặn
 
 1. `.claude/settings.json`, tắt attribution tại nguồn:
 
@@ -26,9 +26,7 @@ Kiểm chứng: `GET /repos/anthropics/claude-code/contributors` trả về mộ
 
    `attribution` là khóa hiện hành, `includeCoAuthoredBy` là khóa cũ vẫn được tôn trọng. Đặt cả hai để máy nào chạy bản Claude Code cũ vẫn tắt được.
 
-2. `AGENTS.md` + `CLAUDE.md`, dặn mọi agent (Claude Code, Codex, Copilot, Cursor, Hermes) không thêm trailer, không đổi danh tính commit, không dùng `--no-verify`.
-
-3. `.githooks/commit-msg` + `scripts/setup-hooks.sh`, chặn ngay trên máy khi `git commit`:
+2. `.githooks/commit-msg` + `scripts/setup-hooks.sh`, chặn ngay trên máy khi `git commit`:
 
    ```bash
    bash scripts/setup-hooks.sh
@@ -36,7 +34,7 @@ Kiểm chứng: `GET /repos/anthropics/claude-code/contributors` trả về mộ
 
    Hook từ chối: trailer co-author trỏ tới Claude/Anthropic, dòng `Generated with Claude Code`, email `*@anthropic.com`, và trường hợp commit author là AI.
 
-4. GitHub Actions + bảo vệ nhánh:
+3. GitHub Actions + bảo vệ nhánh:
 
    - `no-ai-coauthor` chạy trên mọi push vào `main` và mọi PR, quét toàn bộ commit trong phạm vi PR.
    - `contributors-guard` chạy hằng tuần, đọc API contributors, báo đỏ khi có `claude`, `anthropic` hoặc bất kỳ `type: Bot`.

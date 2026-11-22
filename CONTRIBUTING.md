@@ -18,12 +18,11 @@ Repo này giữ bảng contributor chỉ gồm người thật. Vì vậy mọi 
 - dòng quảng cáo kiểu `Generated with Claude Code`, `🤖 Generated with ...`;
 - commit author là `Claude`, `claude[bot]`, hoặc email `*@anthropic.com`.
 
-Cơ chế chặn gồm 4 lớp, xem chi tiết ở `docs/no-ai-attribution.md`:
+Cơ chế chặn gồm 3 lớp, xem chi tiết ở `docs/no-ai-attribution.md`:
 
 | Lớp | Tệp | Việc nó làm |
 | --- | --- | --- |
 | Cấu hình công cụ | `.claude/settings.json` | tắt attribution của Claude Code ngay khi mở repo |
-| Chỉ dẫn agent | `AGENTS.md`, `CLAUDE.md` | dặn mọi AI agent không thêm trailer |
 | Hook cục bộ | `.githooks/commit-msg` | chặn ngay lúc `git commit` trên máy bạn |
 | CI + bảo vệ nhánh | `.github/workflows/no-ai-coauthor.yml` | chặn merge PR có dấu vết AI |
 
