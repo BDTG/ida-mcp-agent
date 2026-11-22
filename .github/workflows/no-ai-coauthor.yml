@@ -37,10 +37,10 @@ jobs:
           case "${BASE_SHA:-}" in ""|0000000000000000000000000000000000000000) BASE_SHA="";; esac
           case "${BEFORE_SHA:-}" in ""|0000000000000000000000000000000000000000) BEFORE_SHA="";; esac
 
-          if [ -n "$BASE_SHA" ] && git rev-parse --verify -q "$BASE_SHA" >/dev/null; then
+          if [ -n "$BASE_SHA" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
             echo "Pham vi: $BASE_SHA..HEAD (pull request)"
             bash scripts/check-ai-attribution.sh "$BASE_SHA..HEAD"
-          elif [ -n "$BEFORE_SHA" ] && git rev-parse --verify -q "$BEFORE_SHA" >/dev/null; then
+          elif [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
             echo "Pham vi: $BEFORE_SHA..$GITHUB_SHA (push)"
             bash scripts/check-ai-attribution.sh "$BEFORE_SHA..$GITHUB_SHA"
           else

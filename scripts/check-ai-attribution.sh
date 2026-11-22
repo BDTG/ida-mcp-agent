@@ -12,7 +12,10 @@ range="${1:-}"
 if [ "$range" = "--all-branches" ]; then
   shas=$(git rev-list --all)
 elif [ -n "$range" ]; then
-  shas=$(git rev-list "$range")
+  if ! shas=$(git rev-list "$range" 2>/dev/null) || [ -z "$shas" ]; then
+    echo "check-ai-attribution: pham vi '$range' khong dung duoc (commit goc khong co trong ban clone), chuyen sang quet toan bo lich su HEAD."
+    shas=$(git rev-list HEAD)
+  fi
 else
   shas=$(git rev-list HEAD)
 fi
