@@ -40,15 +40,15 @@ Thành phần:
 - IDA Pro (bản có quyền dùng `idat64`), không commit binary của IDA vào repo.
 - Python 3.11+
 - Một runtime LLM local (Ollama hoặc llama.cpp) nếu chạy offline.
-- Git 2.40+ (hook và script kiểm tra dùng bash, có sẵn trong Git for Windows).
 
 ## Bắt đầu
 
 ```bash
 git clone https://github.com/BDTG/ida-mcp-agent.git
 cd ida-mcp-agent
-bash scripts/setup-hooks.sh      # bắt buộc một lần cho mỗi máy clone
 ```
+
+Không cần cài hook hay công cụ gì thêm. Repo chỉ chặn một việc: commit phải do người thật đứng tên (xem `.github/workflows/no-ai-author.yml`). Dùng AI viết code, viết commit message hay thêm `Co-Authored-By` đều không bị chặn.
 
 ## Cấu trúc repo (dự kiến)
 

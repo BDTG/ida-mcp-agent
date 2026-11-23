@@ -1,0 +1,73 @@
+name: no-ai-author
+
+# Mục tiêu duy nhất: không cho tài khoản AI/bot đứng tên tác giả commit.
+# Không quét nội dung commit message, không cấm dùng công cụ AI để viết code.
+# Người dùng Claude Code/Codex/Copilot commit bình thường, chỉ cần danh tính commit là người.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: no-ai-author-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-ai-author:
+    name: no-ai-author
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Kiem tra danh tinh tac gia tung commit
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          case "${BASE_SHA:-}" in ""|0000000000000000000000000000000000000000) BASE_SHA="";; esac
+          case "${BEFORE_SHA:-}" in ""|0000000000000000000000000000000000000000) BEFORE_SHA="";; esac
+
+          if [ -n "$BASE_SHA" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            RANGE="$BASE_SHA..HEAD"
+          elif [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            RANGE="$BEFORE_SHA..$GITHUB_SHA"
+          else
+            RANGE="HEAD"
+          fi
+          echo "Pham vi kiem tra: $RANGE"
+
+          # Chi doc danh tinh author/committer, khong doc message, khong doc trailer
+          git log --format='%H%x09%an%x09%ae%x09%cn%x09%ce' "$RANGE" > /tmp/idents.tsv || git log --format='%H%x09%an%x09%ae%x09%cn%x09%ce' HEAD > /tmp/idents.tsv
+
+          fail=0
+          count=0
+          while IFS=$'\t' read -r sha an ae cn ce; do
+            [ -z "${sha:-}" ] && continue
+            count=$((count + 1))
+            short=$(git rev-parse --short "$sha")
+            for ident in "$an <$ae>" "$cn <$ce>"; do
+              if printf '%s' "$ident" | grep -Eiq 'claude|anthropic|\[bot\]@users\.noreply\.github\.com'; then
+                echo "::error title=Tac gia AI::$short co danh tinh $ident"
+                echo "FAIL $short: danh tinh commit la tai khoan AI/bot -> $ident"
+                fail=1
+              fi
+            done
+          done < /tmp/idents.tsv
+
+          if [ "$fail" -ne 0 ]; then
+            echo
+            echo "Commit phai do nguoi that dung ten (git config user.name / user.email)."
+            echo "Dung AI viet code, viet message, them Co-Authored-By deu duoc phep."
+            exit 1
+          fi
+
+          echo "OK: $count commit, tat ca danh tinh deu la nguoi."
